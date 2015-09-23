@@ -1,0 +1,31 @@
+{
+  "name": "commandlinejs",
+  "version": "0.0.1",
+  "description": "Configuration helper for node js command line apps",
+  "main": "index.js",
+  "dependencies": {
+    "minimist": "^1.2.0",
+    "underscore": "^1.8.3",
+    "xpo-stringjs": "xpologistics/commonjs.utils-string"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xpologistics/commandlinejs.git"
+  },
+  "keywords": [
+    "command",
+    "line",
+    "node",
+    "js"
+  ],
+  "author": "Jay Silberkleit",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/xpologistics/commandlinejs/issues"
+  },
+  "homepage": "https://github.com/xpologistics/commandlinejs#readme"
+}
