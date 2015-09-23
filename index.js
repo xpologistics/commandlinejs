@@ -4,11 +4,13 @@ var xstr = require('xpo-stringjs');
 module.exports = wrapper();
 
 function wrapper() {
-    var managedConfig = null;
     var argv          = require('minimist')(process.argv.slice(2));
 
     function CommandLine(config) {
-        managedConfig = config;
+        if (!(this instanceof CommandLine))
+            return new CommandLine(config);
+
+        this.managedConfig = config;
     }
 
     CommandLine.prototype.parseCommandLine = function () {
@@ -57,8 +59,8 @@ function wrapper() {
         var commandText = {};
 
         // get commands and sub values (for objects)
-        Object.keys(managedConfig).forEach(function (c) {
-            var item = managedConfig[c];
+        Object.keys(that.managedConfig).forEach(function (c) {
+            var item = that.managedConfig[c];
 
             // commands
             var text = that.getCommandForHelp(item.command);
@@ -82,8 +84,8 @@ function wrapper() {
             if (item.subCommands.length)
                 item.command += 'subcommand:value';
 
-            var defaultText = !_.isArray(managedConfig[key].value) && !_.isObject(managedConfig[key].value)
-                ? ' (default: ' + (managedConfig[key].value || 'none') + ')'
+            var defaultText = !_.isArray(that.managedConfig[key].value) && !_.isObject(that.managedConfig[key].value)
+                ? ' (default: ' + (that.managedConfig[key].value || 'none') + ')'
                 : '';
 
             console.log('  ' + xstr.padRight(item.command, maxLength + 10) + item.name + defaultText);
@@ -99,10 +101,10 @@ function wrapper() {
     CommandLine.prototype.applyConfigSetting = function(name, value) {
         var that = this;
 
-        for (var key in managedConfig) {
-            if (!managedConfig.hasOwnProperty(key)) continue;
+        for (var key in that.managedConfig) {
+            if (!that.managedConfig.hasOwnProperty(key)) continue;
 
-            var configSection = managedConfig[key];
+            var configSection = that.managedConfig[key];
             var command = _.isArray(configSection.command) ? configSection.command : [configSection.command];
 
             for (var i = 0; i < command.length; i++) {
