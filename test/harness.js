@@ -77,8 +77,9 @@ var testConfig = {
     }
 };
 
+var testConfig2 = JSON.parse(JSON.stringify(testConfig));
 var pass = new CommandLine(testConfig).parseCommandLine();
-
-if (!pass) return;
+var pass2 = new CommandLine(testConfig2).parseCommandLine();
+if (!pass && !pass2) return;
 
 console.log(JSON.stringify(testConfig, null, '\t'));

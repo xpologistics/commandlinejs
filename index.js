@@ -1,16 +1,17 @@
 var _   = require('underscore');
 var xstr = require('xpo-stringjs');
 
-module.exports = wrapper();
+module.exports = new Wrapper();
 
-function wrapper() {
+function Wrapper() {
     var argv          = require('minimist')(process.argv.slice(2));
+    var managedConfig = null;
 
     function CommandLine(config) {
         if (!(this instanceof CommandLine))
             return new CommandLine(config);
 
-        this.managedConfig = config;
+        managedConfig = config;
     }
 
     CommandLine.prototype.parseCommandLine = function () {
@@ -25,6 +26,7 @@ function wrapper() {
             if (key == '_') return;
 
             var value = argv[key];
+
             if (!that.applyConfigSetting(key, value))
                 console.log('Ignoring unrecognized command %s', key);
         });
@@ -59,8 +61,8 @@ function wrapper() {
         var commandText = {};
 
         // get commands and sub values (for objects)
-        Object.keys(that.managedConfig).forEach(function (c) {
-            var item = that.managedConfig[c];
+        Object.keys(managedConfig).forEach(function (c) {
+            var item = managedConfig[c];
 
             // commands
             var text = that.getCommandForHelp(item.command);
@@ -84,8 +86,8 @@ function wrapper() {
             if (item.subCommands.length)
                 item.command += 'subcommand:value';
 
-            var defaultText = !_.isArray(that.managedConfig[key].value) && !_.isObject(that.managedConfig[key].value)
-                ? ' (default: ' + (that.managedConfig[key].value || 'none') + ')'
+            var defaultText = !_.isArray(managedConfig[key].value) && !_.isObject(managedConfig[key].value)
+                ? ' (default: ' + (managedConfig[key].value || 'none') + ')'
                 : '';
 
             console.log('  ' + xstr.padRight(item.command, maxLength + 10) + item.name + defaultText);
@@ -101,10 +103,10 @@ function wrapper() {
     CommandLine.prototype.applyConfigSetting = function(name, value) {
         var that = this;
 
-        for (var key in that.managedConfig) {
-            if (!that.managedConfig.hasOwnProperty(key)) continue;
+        for (var key in managedConfig) {
+            if (!managedConfig.hasOwnProperty(key)) continue;
 
-            var configSection = that.managedConfig[key];
+            var configSection = managedConfig[key];
             var command = _.isArray(configSection.command) ? configSection.command : [configSection.command];
 
             for (var i = 0; i < command.length; i++) {
@@ -124,9 +126,11 @@ function wrapper() {
     };
 
     CommandLine.prototype.setConfigValue = function(configSection, newValue) {
-        if (_.isArray(configSection.value))
-            configSection.value.push(newValue);
-        if (_.isObject(configSection.value)) {
+        if (_.isArray(configSection.value)) {
+            // replace the default if there was one
+            (configSection._isSet) ? configSection.value.push(newValue) : configSection.value = [newValue];
+            configSection._isSet = true;
+        } else if (_.isObject(configSection.value)) {
             var v = parseObjectValue(newValue);
             if (!v || v.length != 2 || !configSection.value[v[0]]) return false;
             configSection.value[v[0]].value = v[1];
